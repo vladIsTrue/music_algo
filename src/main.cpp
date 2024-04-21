@@ -1,29 +1,37 @@
 #include "utils.h"
 
+#include "../midi/include/MidiFile.h"
+
+using namespace smf;
+using namespace std;
+
 int main()
 {
-//    auto tuple = test::long_short_test<double>();
+    MidiFile midifile;
 
-//    std::get<0>(tuple).save ("1.wav", AudioFileFormat::Wave);
-//    std::get<1>(tuple).save ("2.wav", AudioFileFormat::Wave);
+    midifile.readSmf("alerte_mms.mid");
 
+    midifile.doTimeAnalysis();
+    midifile.linkNotePairs();
 
-//    tuple = test::long_speed_test<double>();
-
-//    std::get<0>(tuple).save ("3.wav", AudioFileFormat::Wave);
-//    std::get<1>(tuple).save ("4.wav", AudioFileFormat::Wave);
-
-
-//    tuple = test::long_short_speed_test<double>();
-
-//    std::get<0>(tuple).save ("5.wav", AudioFileFormat::Wave);
-//    std::get<1>(tuple).save ("6.wav", AudioFileFormat::Wave);
-
-
-    std::string first {"41516171"};
-    std::string second {"4567"};
-
-    std::cout << algo::lcs(first.begin(), first.end(), second.begin(), second.end());
+    int tracks = midifile.getTrackCount();
+    cout << "TPQ: " << midifile.getTicksPerQuarterNote() << endl;
+    if (tracks > 1) cout << "TRACKS: " << tracks << endl;
+    for (int track=0; track<tracks; track++) {
+       if (tracks > 1) cout << "\nTrack " << track << endl;
+       cout << "Tick\tSeconds\tDur\tMessage" << endl;
+       for (int event=0; event<midifile[track].size(); event++) {
+          cout << dec << midifile[track][event].tick;
+          cout << '\t' << dec << midifile[track][event].seconds;
+          cout << '\t';
+          if (midifile[track][event].isNoteOn())
+             cout << midifile[track][event].getDurationInSeconds();
+          cout << '\t' << hex;
+          for (int i=0; i<midifile[track][event].size(); i++)
+             cout << (int)midifile[track][event][i] << ' ';
+          cout << endl;
+       }
+    }
 
     return 0;
 }

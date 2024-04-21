@@ -1,4 +1,7 @@
 #include <cmath>
+#include <memory>
+
+#include <iostream>
 
 #include "AudioFile.h"
 
@@ -26,6 +29,8 @@ template <class It>
 int lcs(It x_begin, It x_end, It y_begin, It y_end);
 
 }
+
+
 
 namespace test
 {
@@ -59,6 +64,10 @@ namespace test
         {
             part.samples[chanell][j] = origin.samples[chanell][i];
         }
+
+        //origin_one_chanell.setBitDepth(origin_one_chanell.getBitDepth() / 4);
+        origin_one_chanell.setNumSamplesPerChannel(origin_one_chanell.getNumSamplesPerChannel() / 4);
+        part.setNumSamplesPerChannel(part.getNumSamplesPerChannel() / 4);
 
         return {origin_one_chanell, part};
     }
@@ -111,8 +120,21 @@ int lcs(It x_begin, It x_end, It y_begin, It y_end)
     auto m = std::distance(x_begin, x_end);
     auto n = std::distance(y_begin, y_end);
 
+    std::cout << m << '\t' << n << '\n';
 
-    std::vector<std::vector<int>> L(m + 1, std::vector<int>(n + 1));
+    //std::vector<std::vector<int>> L(m + 1, std::vector<int>(n + 1));
+
+//    std::unique_ptr<std::vector<std::vector<int>>> L =
+//           std::make_unique<std::vector<std::vector<int>>>(m + 1, std::vector<int>(n + 1));
+
+    // memory leack
+
+
+    int** L = new int*[m + 1];
+    for(int i = 0; i <= m; ++i) {
+        L[i] = new int[n + 1];
+    }
+
 
     for (int i = 0; i <= m; ++i) {
         for (int j = 0; j <= n; ++j) {
