@@ -1,114 +1,51 @@
 #include <cmath>
 #include <memory>
+#include <algorithm>
 
 #include <iostream>
 
-#include "AudioFile.h"
+#include "../midi/include/MidiFile.h"
 
 namespace test
 {
 
-template<class T>
-std::tuple<AudioFile<T>, AudioFile<T>> long_short_test
-(std::string input_file_path ="/home/fym/cpp/kursach/src/test-audio.wav");
+std::tuple<std::vector<int>, double> mid_to_vector(const std::string& filename, double min_duration = INTMAX_MAX)
+{
+    using namespace smf;
 
-template<class T>
-std::tuple<AudioFile<T>, AudioFile<T>> long_speed_test
-(std::string input_file_path ="/home/fym/cpp/kursach/src/test-audio.wav");
+    MidiFile midifile;
 
-template<class T>
-std::tuple<AudioFile<T>, AudioFile<T>> long_short_speed_test
-(std::string input_file_path ="/home/fym/cpp/kursach/src/test-audio.wav");
+    midifile.readSmf(filename);
 
+    midifile.doTimeAnalysis();
+    midifile.linkNotePairs();
+
+    int track = 1;
+    double min = min_duration;  // потом можно "усложнить"
+    for (int event = 0; event < midifile[track].size(); ++event) {
+        if (midifile[track][event].isNoteOn()) {
+
+            if (midifile[track][event].getDurationInSeconds() < min)
+                min = midifile[track][event].getDurationInSeconds();
+        }
+    }
+
+    std::vector<int> symbol_str;
+
+    for (int event = 0; event < midifile[track].size(); ++event) {
+        if (midifile[track][event].isNoteOn()) {
+
+            int number = midifile[track][event].getDurationInSeconds() / min;
+
+            for (int i = 0; i < number; ++i) {
+                symbol_str.push_back((int)midifile[track][event][1]);
+            }
+        }
+    }
+
+    return {symbol_str, min};
 }
 
-namespace algo
-{
-
-template <class It>
-int lcs(It x_begin, It x_end, It y_begin, It y_end);
-
-}
-
-
-
-namespace test
-{
-    template<class T>
-    std::tuple<AudioFile<T>, AudioFile<T>> long_short_test(std::string input_file_path)
-    {
-        AudioFile<T> origin;
-        bool loadedOK = origin.load(input_file_path);
-
-        assert (loadedOK);
-
-        AudioFile<T> origin_one_chanell, part;
-        origin_one_chanell.setNumChannels(1);
-        origin_one_chanell.setNumSamplesPerChannel(origin.getNumSamplesPerChannel());
-
-        part.setNumChannels(1);
-        part.setNumSamplesPerChannel(origin.getNumSamplesPerChannel() / 3.0);
-
-        int chanell = 0;
-
-        for (int i = 0, end = origin.getNumSamplesPerChannel(); i < end; ++i)
-        {
-            origin_one_chanell.samples[chanell][i] = origin.samples[chanell][i];
-        }
-
-        for (int i = origin.getNumSamplesPerChannel() / 3.0,
-                 j = 0,
-               iend = origin.getNumSamplesPerChannel() * 2.0 / 3.0,
-               jend = origin.getNumSamplesPerChannel() / 3.0;
-             i < iend && j < jend; ++i, ++j)
-        {
-            part.samples[chanell][j] = origin.samples[chanell][i];
-        }
-
-        //origin_one_chanell.setBitDepth(origin_one_chanell.getBitDepth() / 4);
-        origin_one_chanell.setNumSamplesPerChannel(origin_one_chanell.getNumSamplesPerChannel() / 4);
-        part.setNumSamplesPerChannel(part.getNumSamplesPerChannel() / 4);
-
-        return {origin_one_chanell, part};
-    }
-
-    template<class T>
-    std::tuple<AudioFile<T>, AudioFile<T>> long_speed_test(std::string input_file_path)
-    {
-        AudioFile<T> origin;
-        bool loadedOK = origin.load(input_file_path);
-
-        assert (loadedOK);
-
-        AudioFile<T> origin_one_chanell;
-
-        origin_one_chanell.setNumChannels(1);
-        origin_one_chanell.setNumSamplesPerChannel(origin.getNumSamplesPerChannel());
-
-        int chanell = 0;
-
-        for (int i = 0, end = origin.getNumSamplesPerChannel(); i < end; ++i)
-        {
-            origin_one_chanell.samples[chanell][i] = origin.samples[chanell][i];
-        }
-
-        AudioFile<T> speed(origin_one_chanell);
-        speed.setSampleRate(origin_one_chanell.getSampleRate() * 2.0);
-
-        return {origin_one_chanell, speed};
-    }
-
-    template<class T>
-    std::tuple<AudioFile<T>, AudioFile<T>> long_short_speed_test(std::string input_file_path)
-    {
-        auto tuple = long_short_test<T>(input_file_path);
-
-        AudioFile<T> speed(std::get<1>(tuple));
-
-        speed.setSampleRate(std::get<1>(tuple).getSampleRate() * 2.0);
-
-        return {std::get<0>(tuple), speed};
-    }
 }
 
 namespace algo
@@ -120,21 +57,7 @@ int lcs(It x_begin, It x_end, It y_begin, It y_end)
     auto m = std::distance(x_begin, x_end);
     auto n = std::distance(y_begin, y_end);
 
-    std::cout << m << '\t' << n << '\n';
-
-    //std::vector<std::vector<int>> L(m + 1, std::vector<int>(n + 1));
-
-//    std::unique_ptr<std::vector<std::vector<int>>> L =
-//           std::make_unique<std::vector<std::vector<int>>>(m + 1, std::vector<int>(n + 1));
-
-    // memory leack
-
-
-    int** L = new int*[m + 1];
-    for(int i = 0; i <= m; ++i) {
-        L[i] = new int[n + 1];
-    }
-
+    std::vector<std::vector<int>> L(m + 1, std::vector<int>(n + 1));
 
     for (int i = 0; i <= m; ++i) {
         for (int j = 0; j <= n; ++j) {

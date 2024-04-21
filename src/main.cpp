@@ -1,37 +1,22 @@
 #include "utils.h"
 
-#include "../midi/include/MidiFile.h"
-
-using namespace smf;
-using namespace std;
-
 int main()
 {
-    MidiFile midifile;
+    auto [vector, min] = test::mid_to_vector("no_name.mid");
+    auto [vector1, min1] = test::mid_to_vector("no_name3.mid", min);
 
-    midifile.readSmf("alerte_mms.mid");
+    for (auto item : vector)
+        std::cout << item << " ";
 
-    midifile.doTimeAnalysis();
-    midifile.linkNotePairs();
+    std::cout << "\n\n\n";
 
-    int tracks = midifile.getTrackCount();
-    cout << "TPQ: " << midifile.getTicksPerQuarterNote() << endl;
-    if (tracks > 1) cout << "TRACKS: " << tracks << endl;
-    for (int track=0; track<tracks; track++) {
-       if (tracks > 1) cout << "\nTrack " << track << endl;
-       cout << "Tick\tSeconds\tDur\tMessage" << endl;
-       for (int event=0; event<midifile[track].size(); event++) {
-          cout << dec << midifile[track][event].tick;
-          cout << '\t' << dec << midifile[track][event].seconds;
-          cout << '\t';
-          if (midifile[track][event].isNoteOn())
-             cout << midifile[track][event].getDurationInSeconds();
-          cout << '\t' << hex;
-          for (int i=0; i<midifile[track][event].size(); i++)
-             cout << (int)midifile[track][event][i] << ' ';
-          cout << endl;
-       }
-    }
+    for (auto item : vector1)
+        std::cout << item << " ";
+
+
+    std::cout << "\n\n\n";
+
+    std::cout << algo::lcs(vector.begin(), vector.end(), vector1.begin(), vector1.end()) << "\n";
 
     return 0;
 }
