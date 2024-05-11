@@ -1,6 +1,4 @@
-add_executable(src 
-    AudioFile.h
-
+add_executable(src
     ../midi/include/Binasc.h
     ../midi/include/MidiEvent.h
     ../midi/include/MidiEventList.h

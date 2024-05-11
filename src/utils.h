@@ -20,7 +20,7 @@ std::tuple<std::vector<int>, double> mid_to_vector(const std::string& filename, 
     midifile.doTimeAnalysis();
     midifile.linkNotePairs();
 
-    int track = 1;
+    int track = 0;
     double min = min_duration;  // потом можно "усложнить"
     for (int event = 0; event < midifile[track].size(); ++event) {
         if (midifile[track][event].isNoteOn()) {
