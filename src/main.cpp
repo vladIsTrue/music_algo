@@ -11,7 +11,6 @@ int main(int argc, char* argv[])
     auto [vector, min] = test::mid_to_vector(argv[1]);
     auto [vector1, min1] = test::mid_to_vector(argv[2], min);
 
-    //double lcs = algo::lcs(vector.begin(), vector.end(), vector1.begin(), vector1.end());
     double lcs_mod = algo::lcs_mod(vector.begin(), vector.end(), vector1.begin(), vector1.end());
 
     double coeff = lcs_mod / vector.size();
